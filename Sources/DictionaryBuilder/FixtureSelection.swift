@@ -19,6 +19,10 @@ enum FixtureSelection {
         // Honorific godan verbs (いらっしゃいます) and くれる's command くれ, which must not
         // take over 暮れる. いらっしゃる is only spelled with a search-only kanji form.
         "いらっしゃる", "おっしゃる", "呉れる", "暮れる",
+        // JLPT tie-breaks: the everyday word (N5) must beat formal synonyms that are just as "common":
+        // book 本 vs 書籍/書物, make 作る vs こしらえる/製, same 同じ vs 同様, 行った → 行く vs 行う,
+        // to eat 食べる vs 食う.
+        "書籍", "書物", "こしらえる", "製", "同様", "行う", "食う",
     ]
 
     /// Targets whose spelling is shared by several entries: the reading picks the one we mean.
@@ -68,7 +72,8 @@ enum FixtureSelection {
 
     private static func score(_ word: JMdictWord, _ form: String) -> Int {
         let headword = EntryWriter.shownKanji(word).first?.text ?? word.kana.first?.text
-        return EntryWriter.priority(word) + (headword == form ? 1000 : 0)
+        // Without JLPT, so adding JLPT data never changes which entries the fixture holds.
+        return EntryWriter.priority(word, jlptLevel: nil) + (headword == form ? 1000 : 0)
     }
 
     private static func isIdeograph(_ scalar: Unicode.Scalar) -> Bool {

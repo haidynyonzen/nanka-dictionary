@@ -10,6 +10,8 @@ public enum DictionarySchema {
         public static let schemaVersion = "schema_version"
         public static let jmdictVersion = "jmdict_version"
         public static let kanjidicVersion = "kanjidic_version"
+        /// Where `entry.jlpt` came from. Absent in databases built before JLPT levels were added.
+        public static let jlptVersion = "jlpt_version"
         public static let builtAt = "built_at"
         public static let attribution = "attribution"
     }

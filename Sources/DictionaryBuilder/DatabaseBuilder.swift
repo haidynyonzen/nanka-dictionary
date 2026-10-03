@@ -8,6 +8,7 @@ struct BuildInput {
     let words: [JMdictWord]
     let kanjidic: KanjidicFile
     let kanji: [KanjidicCharacter]
+    let jlpt: JLPTLevels
 }
 
 /// Creates the SQLite file: schema, all rows in one transaction, then ANALYZE + FTS optimize + VACUUM.
@@ -22,7 +23,7 @@ struct DatabaseBuilder {
             for statement in DictionarySchema.createStatements { try db.execute(sql: statement) }
             try writeMeta(input, to: db)
             try EntryWriter.writeTags(input.jmdict.tags, to: db)
-            let entryWriter = EntryWriter(db: db)
+            let entryWriter = EntryWriter(db: db, jlpt: input.jlpt)
             for word in input.words { try entryWriter.write(word) }
             // After the entries: ranking needs every entry's priority and senses.
             try GlossIndexWriter(db: db).write()
@@ -46,6 +47,7 @@ struct DatabaseBuilder {
             (DictionarySchema.MetaKey.schemaVersion, String(DictionarySchema.version)),
             (DictionarySchema.MetaKey.jmdictVersion, "JMdict \(input.jmdict.dictDate) (jmdict-simplified \(PinnedSources.release))"),
             (DictionarySchema.MetaKey.kanjidicVersion, "KANJIDIC2 \(input.kanjidic.databaseVersion) (jmdict-simplified \(PinnedSources.release))"),
+            (DictionarySchema.MetaKey.jlptVersion, "\(PinnedJLPT.description) (\(input.jlpt.count) words)"),
             (DictionarySchema.MetaKey.builtAt, builtAt),
             (DictionarySchema.MetaKey.attribution, attributionText),
         ]
