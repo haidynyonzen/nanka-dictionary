@@ -16,6 +16,9 @@ enum FixtureSelection {
         "同党",
         // Deinflection: suru-noun, irregular verbs, and the いい/よい adjective.
         "勉強", "来る", "行く", "良い", "いい",
+        // Honorific godan verbs (いらっしゃいます) and くれる's command くれ, which must not
+        // take over 暮れる. いらっしゃる is only spelled with a search-only kanji form.
+        "いらっしゃる", "おっしゃる", "呉れる", "暮れる",
     ]
 
     /// Targets whose spelling is shared by several entries: the reading picks the one we mean.
@@ -64,7 +67,7 @@ enum FixtureSelection {
     }
 
     private static func score(_ word: JMdictWord, _ form: String) -> Int {
-        let headword = word.kanji.first?.text ?? word.kana.first?.text
+        let headword = EntryWriter.shownKanji(word).first?.text ?? word.kana.first?.text
         return EntryWriter.priority(word) + (headword == form ? 1000 : 0)
     }
 

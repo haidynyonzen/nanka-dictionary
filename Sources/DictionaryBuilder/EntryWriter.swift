@@ -14,11 +14,17 @@ struct EntryWriter {
         try writeSenses(entryID: id, word.sense)
     }
 
-    /// Words JMdict marks "usually kana" (`uk`) show their kana: こっち, not 此方.
+    /// Words JMdict marks "usually kana" (`uk`) show their kana: こっち, not 此方. Search-only
+    /// spellings are never shown, so いらっしゃる (only spelled 居らっしゃる for search) shows its kana.
     static func headword(_ word: JMdictWord, firstKana: JMdictKana) -> String {
         let usuallyKana = word.sense.first?.misc.contains("uk") ?? false
-        guard !usuallyKana, let kanji = word.kanji.first else { return firstKana.text }
+        guard !usuallyKana, let kanji = shownKanji(word).first else { return firstKana.text }
         return kanji.text
+    }
+
+    /// Kanji spellings that may be displayed: all but the search-only (`sK`) ones.
+    static func shownKanji(_ word: JMdictWord) -> [JMdictKanji] {
+        word.kanji.filter { !$0.tags.contains("sK") }
     }
 
     /// Writes the `tag` table from the file's tag dictionary.
@@ -126,7 +132,8 @@ struct EntryWriter {
     }
 
     private static func isMainSpellingCommon(_ word: JMdictWord) -> Bool {
-        guard let mainKanji = word.kanji.first else { return word.kana.first?.common == true }
+        // A search-only spelling is never shown, so it can't be the main one.
+        guard let mainKanji = shownKanji(word).first else { return word.kana.first?.common == true }
         // "rK" = rarely used kanji form: the kana reading is the normal way to write the word.
         return mainKanji.common || mainKanji.tags.contains("rK")
     }
