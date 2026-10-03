@@ -1,6 +1,6 @@
 /// SQL for the bundled, read-only dictionary database.
 ///
-/// Shared by `tools/DictionaryBuilder` (writes it) and `DictionaryKit` (reads it),
+/// Shared by `DictionaryBuilder` (writes it) and apps that read the database,
 /// so the two can never drift apart. Bump `version` whenever a statement changes.
 public enum DictionarySchema {
     public static let version = 1

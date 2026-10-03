@@ -10,7 +10,7 @@ The dictionary database used by the Nanka Japanese dictionary app, and the Swift
 |---|---|---|
 | `Sources/DictionaryCore` | Schema SQL and kana normalization shared with apps that read the database | MIT |
 | `Sources/DictionaryBuilder` | Command-line tool: JMdict / KANJIDIC2 JSON → SQLite | MIT |
-| `dictionary.sqlite` (release asset) | The built database | CC BY-SA 4.0 |
+| `dictionary.sqlite` (release asset) | The built database | CC BY-SA 4.0 (see [LICENSE-DATA](LICENSE-DATA)) |
 
 ## Data sources and attribution
 The database uses the [JMdict](https://www.edrdg.org/jmdict/j_jmdict.html) and [KANJIDIC2](https://www.edrdg.org/wiki/index.php/KANJIDIC_Project) dictionary files. These files are the property of the [Electronic Dictionary Research and Development Group](https://www.edrdg.org/) (EDRDG), and are used in conformity with the Group's [licence](https://www.edrdg.org/edrdg/licence.html), [Creative Commons Attribution-ShareAlike 4.0](https://creativecommons.org/licenses/by-sa/4.0/).

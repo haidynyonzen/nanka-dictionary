@@ -1,0 +1,22 @@
+Dictionary data licence
+
+The dictionary databases published in this repository's releases
+(dictionary.sqlite and dictionary.sqlite.zip) are licensed under the
+Creative Commons Attribution-ShareAlike 4.0 International licence:
+https://creativecommons.org/licenses/by-sa/4.0/
+
+They are adaptations of the JMdict and KANJIDIC2 dictionary files. These
+files are the property of the Electronic Dictionary Research and
+Development Group (EDRDG), https://www.edrdg.org/, and are used in
+conformity with the Group's licence:
+https://www.edrdg.org/edrdg/licence.html
+
+The source files were converted to JSON by jmdict-simplified
+(https://github.com/scriptin/jmdict-simplified). README.md lists the
+changes made to the source data.
+
+No copyright is claimed on the dictionary data. It is provided as-is,
+without warranty of any kind.
+
+The source code in this repository is licensed separately under the MIT
+licence (see LICENSE).
