@@ -3,7 +3,7 @@
 /// Shared by `DictionaryBuilder` (writes it) and apps that read the database,
 /// so the two can never drift apart. Bump `version` whenever a statement changes.
 public enum DictionarySchema {
-    public static let version = 1
+    public static let version = 2
 
     /// Keys stored in the `meta` table.
     public enum MetaKey {
@@ -99,6 +99,8 @@ public enum DictionarySchema {
         ) WITHOUT ROWID
         """,
         // English lookup: full-text search over glosses, with stemming.
+        // Rows get explicit rowids ordered by entry priority, then gloss length (GlossIndexWriter in the builder),
+        // so `MATCH ... LIMIT n` returns good candidates first. The app relies on that and re-ranks.
         """
         CREATE VIRTUAL TABLE gloss_fts USING fts5(
             gloss,
@@ -106,6 +108,16 @@ public enum DictionarySchema {
             sense_position UNINDEXED,
             tokenize = 'porter unicode61 remove_diacritics 2'
         )
+        """,
+        // English exact lookup, pre-ranked at build time (keys: see GlossKey). One row per (key, entry);
+        // lower rank = better, so `WHERE key = ? ORDER BY rank LIMIT n` is the whole query.
+        """
+        CREATE TABLE gloss_exact (
+            key      TEXT    NOT NULL,
+            rank     INTEGER NOT NULL,
+            entry_id INTEGER NOT NULL REFERENCES entry(id),
+            PRIMARY KEY (key, rank, entry_id)
+        ) WITHOUT ROWID
         """,
         """
         CREATE TABLE kanji (

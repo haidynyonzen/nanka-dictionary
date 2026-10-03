@@ -10,7 +10,7 @@ struct BuildInput {
     let kanji: [KanjidicCharacter]
 }
 
-/// Creates the SQLite file: schema, all rows in one transaction, then ANALYZE + VACUUM.
+/// Creates the SQLite file: schema, all rows in one transaction, then ANALYZE + FTS optimize + VACUUM.
 struct DatabaseBuilder {
     let outputURL: URL
 
@@ -24,6 +24,8 @@ struct DatabaseBuilder {
             try EntryWriter.writeTags(input.jmdict.tags, to: db)
             let entryWriter = EntryWriter(db: db)
             for word in input.words { try entryWriter.write(word) }
+            // After the entries: ranking needs every entry's priority and senses.
+            try GlossIndexWriter(db: db).write()
             let kanjiWriter = KanjiWriter(db: db)
             for character in input.kanji { try kanjiWriter.write(character) }
         }
@@ -56,6 +58,8 @@ struct DatabaseBuilder {
     private func optimize(_ queue: DatabaseQueue) throws {
         try queue.writeWithoutTransaction { db in
             try db.execute(sql: "ANALYZE")
+            // Merge the FTS index segments into one: smaller file, faster queries.
+            try db.execute(sql: "INSERT INTO gloss_fts(gloss_fts) VALUES('optimize')")
             try db.execute(sql: "VACUUM")
         }
     }
