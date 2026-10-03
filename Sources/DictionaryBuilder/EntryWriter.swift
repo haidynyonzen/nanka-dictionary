@@ -5,10 +5,11 @@ import GRDB
 /// Writes one JMdict word into `entry`, its child tables and the search indexes.
 struct EntryWriter {
     let db: Database
+    let jlpt: JLPTLevels
 
     func write(_ word: JMdictWord) throws {
         guard let id = Int(word.id), let firstKana = word.kana.first else { return }
-        try writeEntryRow(id: id, word: word, firstKana: firstKana)
+        try writeEntryRow(id: id, word: word, firstKana: firstKana, jlptLevel: jlpt.level(for: id))
         try writeKanjiForms(entryID: id, word.kanji)
         try writeReadings(entryID: id, word.kana)
         try writeSenses(entryID: id, word.sense)
@@ -36,11 +37,11 @@ struct EntryWriter {
 
     // MARK: - Private
 
-    private func writeEntryRow(id: Int, word: JMdictWord, firstKana: JMdictKana) throws {
+    private func writeEntryRow(id: Int, word: JMdictWord, firstKana: JMdictKana, jlptLevel: Int?) throws {
         try db.insert(
             """
-            INSERT INTO entry (id, headword, reading, gloss_summary, is_common, priority)
-            VALUES (?, ?, ?, ?, ?, ?)
+            INSERT INTO entry (id, headword, reading, gloss_summary, is_common, priority, jlpt)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
             """,
             [
                 id,
@@ -48,7 +49,8 @@ struct EntryWriter {
                 firstKana.text,
                 Self.glossSummary(word.sense.first),
                 Self.isCommon(word),
-                Self.priority(word),
+                Self.priority(word, jlptLevel: jlptLevel),
+                jlptLevel,
             ]
         )
     }
@@ -119,16 +121,24 @@ struct EntryWriter {
         word.kanji.contains { $0.common } || word.kana.contains { $0.common }
     }
 
-    /// Ranking score, 0...100. jmdict-simplified keeps only a single `common` flag per form
+    /// Ranking score, 0...110. jmdict-simplified keeps only a single `common` flag per form
     /// (the news1/ichi1/... markers are folded into it), so the score is built from that:
     /// 50 if any form is common, +30 if the main reading is common, +20 if the main
     /// spelling is common (or is a rarely-used kanji, so kana-first words like する are not penalised).
-    static func priority(_ word: JMdictWord) -> Int {
+    /// The JLPT bonus then breaks the many ties at 100: everyday 本 (N5) beats formal 書籍 (N2).
+    static func priority(_ word: JMdictWord, jlptLevel: Int?) -> Int {
         var score = 0
         if isCommon(word) { score += 50 }
         if word.kana.first?.common == true { score += 30 }
         if isMainSpellingCommon(word) { score += 20 }
-        return score
+        return score + jlptBonus(jlptLevel)
+    }
+
+    /// N5 +10 down to N1 +2: easier levels are the words learners meet first. Small enough that it
+    /// only reorders words the common-flag score can't tell apart.
+    static func jlptBonus(_ level: Int?) -> Int {
+        guard let level, (1...5).contains(level) else { return 0 }
+        return level * 2
     }
 
     private static func isMainSpellingCommon(_ word: JMdictWord) -> Bool {

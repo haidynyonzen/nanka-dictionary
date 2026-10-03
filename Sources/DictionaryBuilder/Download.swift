@@ -36,6 +36,17 @@ struct SourceFetcher {
         return json
     }
 
+    /// Returns the URL of a pinned plain file, downloading only when the cached copy is missing or wrong.
+    func fetchFile(_ source: PlainSourceFile) async throws -> URL {
+        try FileManager.default.createDirectory(at: cacheDirectory, withIntermediateDirectories: true)
+        let destination = cacheDirectory.appendingPathComponent(source.fileName)
+        if !isValidArchive(destination, sha256: source.sha256) {
+            print("Downloading \(source.fileName) ...")
+            try await download(from: source.url, name: source.fileName, sha256: source.sha256, to: destination)
+        }
+        return destination
+    }
+
     // MARK: - Private
 
     private func isValidArchive(_ url: URL, sha256 expected: String) -> Bool {
@@ -47,13 +58,20 @@ struct SourceFetcher {
         print("Downloading \(source.assetName) ...")
         // The "+" in the asset name must be percent-encoded in the URL.
         let encoded = source.assetName.replacingOccurrences(of: "+", with: "%2B")
-        let (data, response) = try await URLSession.shared.data(from: URL(string: PinnedSources.baseURL + encoded)!)
+        try await download(
+            from: PinnedSources.baseURL + encoded, name: source.assetName, sha256: source.sha256, to: destination
+        )
+    }
+
+    /// Downloads one file and refuses it unless its SHA-256 matches the pin.
+    private func download(from url: String, name: String, sha256 expected: String, to destination: URL) async throws {
+        let (data, response) = try await URLSession.shared.data(from: URL(string: url)!)
         if let http = response as? HTTPURLResponse, http.statusCode != 200 {
             throw DownloadError.badStatus(http.statusCode)
         }
         let actual = Self.sha256Hex(of: data)
-        guard actual == source.sha256 else {
-            throw DownloadError.checksumMismatch(file: source.assetName, expected: source.sha256, actual: actual)
+        guard actual == expected else {
+            throw DownloadError.checksumMismatch(file: name, expected: expected, actual: actual)
         }
         try data.write(to: destination)
     }
