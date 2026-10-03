@@ -1,0 +1,6 @@
+.DS_Store
+.build/
+.swiftpm/
+# Downloaded sources and build output
+cache/
+build/
