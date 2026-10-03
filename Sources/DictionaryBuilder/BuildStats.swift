@@ -3,7 +3,7 @@ import GRDB
 
 /// Prints row counts and file size so a bad build is obvious at a glance.
 enum BuildStats {
-    static let tables = ["meta", "tag", "entry", "kanji_form", "reading", "sense", "search_key", "gloss_fts", "kanji"]
+    static let tables = ["meta", "tag", "entry", "kanji_form", "reading", "sense", "search_key", "gloss_fts", "gloss_exact", "kanji"]
 
     static func print(databaseAt url: URL, elapsed: Duration) throws {
         var config = Configuration()

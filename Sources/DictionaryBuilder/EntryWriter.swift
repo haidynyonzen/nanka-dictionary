@@ -81,12 +81,6 @@ struct EntryWriter {
     private func writeSenses(entryID: Int, _ senses: [JMdictSense]) throws {
         for (position, sense) in senses.enumerated() {
             try writeSenseRow(entryID: entryID, position: position, sense)
-            for gloss in sense.gloss {
-                try db.insert(
-                    "INSERT INTO gloss_fts (gloss, entry_id, sense_position) VALUES (?, ?, ?)",
-                    [gloss.text, entryID, position]
-                )
-            }
         }
     }
 
