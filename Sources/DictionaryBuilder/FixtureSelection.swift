@@ -9,6 +9,11 @@ enum FixtureSelection {
         "比べる", "連絡", "少し", "カニ", "こっち", "どっち", "スノーボード", "ガソリン", "食べる", "見る",
         // Extras: prefix search (食べ物), a kana-only verb (する), English lookups (water, dog, book).
         "食べ物", "する", "水", "犬", "本", "猫",
+        // English tie-breaks: native word vs loanword (名前/ネーム, 本/ブック), first gloss (作る vs 号),
+        // fewer glosses (水 vs 水分); English vs romaji (同じ "same" vs 鮫 さめ).
+        "水分", "名前", "ネーム", "ブック", "作る", "号", "同じ", "鮫",
+        // Deinflection: suru-noun, irregular verbs, and the いい/よい adjective.
+        "勉強", "来る", "行く", "良い", "いい",
     ]
 
     /// Targets whose spelling is shared by several entries: the reading picks the one we mean.
