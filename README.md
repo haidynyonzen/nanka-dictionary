@@ -24,6 +24,7 @@ The built database is an adaptation of JMdict (English glosses) and KANJIDIC2, l
 - reorganizes the data into SQLite tables (`entry`, `kanji_form`, `reading`, `sense`, `kanji`, `tag`, `meta`),
 - adds a `search_key` table of normalized forms (katakana and half-width kana folded to hiragana, full-width Latin narrowed and lowercased), a `gloss_fts` full-text index for English search (rowids ordered by priority, then gloss length, so `LIMIT n` yields good candidates), and a pre-ranked `gloss_exact` table for exact English lookups,
 - keeps only English glosses and meanings,
+- picks a headword per entry, never using a search-only (`sK`) kanji form: いらっしゃる is shown in kana rather than as 居らっしゃる,
 - keeps, from KANJIDIC2, the literal, grade, stroke count, JLPT level, frequency, on/kun readings, nanori, English meanings and classical radical. It leaves out the fields under KANJIDIC2's special conditions (SKIP, pinyin, Four Corner, Morohashi, Spahn/Hadamitzky, Korean readings, De Roo).
 
 JLPT levels in KANJIDIC2 follow the old four-level test and are unofficial.
